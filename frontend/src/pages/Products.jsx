@@ -122,9 +122,13 @@ const ProductsPage = () => {
                   <span className="text-sm text-text-muted">4.8</span>
                 </div>
                 <div className="mt-auto pt-4 flex gap-2">
-                  <button className="bg-primary-blue text-white font-semibold text-sm py-2 rounded-lg flex-grow text-center hover:bg-blue-700 transition">
-                    Add to Cart
-                  </button>
+                 <Link
+  to="/cart"
+  className="bg-primary-blue text-white font-semibold text-sm py-2 rounded-lg flex-grow text-center hover:bg-blue-700 transition"
+>
+  Add to Cart
+</Link>
+
                   <button className="border border-primary-yellow p-2 rounded-lg hover:bg-yellow-50 transition">
                     <FaHeart className="w-4 h-4 text-primary-yellow" />
                   </button>

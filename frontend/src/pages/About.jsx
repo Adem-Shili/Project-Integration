@@ -1,11 +1,10 @@
+import React from 'react'
 
-export default function Home() {
+function About() {
   return (
-     <div>
-      <Header />
-      <Hero />
-      <Features />
-      <BestSellers />
-      <CTA />
-      <Footer />
+    <div>
+      
     </div>
+  )
+}
+export default About
