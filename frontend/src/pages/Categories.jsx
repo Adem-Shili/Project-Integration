@@ -13,7 +13,12 @@ import furniture from "../assets/furniture.png"
 
 // data inline
 const featuredCategories = [
+<<<<<<< HEAD
   { id: 1, name: 'Electronics', products: 245, description: 'Latest gadgets, computers, phones, and tech accessories',img: pc },
+=======
+  { id: 1, name: 'Electronics', products: 245, description: 'Latest gadgets, computers, phones, and tech accessories',img: pc 
+ },
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
   { id: 2, name: 'Audio', products: 89, description: 'Headphones, speakers, and sound equipment', img:casque},
   { id: 3, name: 'Accessories', products: 93, description: 'Watches, bags, jewelry, and personal accessories', img: montre },
 ];
@@ -133,7 +138,11 @@ export default function Categories() {
           </section>
         </div>
       </main>
+<<<<<<< HEAD
       <hr className="h-[3px] bg-yellow-500 border-0" />
+=======
+
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
       <Footer />
     </div>
   );

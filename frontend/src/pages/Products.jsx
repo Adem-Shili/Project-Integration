@@ -122,9 +122,19 @@ const ProductsPage = () => {
                   <span className="text-sm text-text-muted">4.8</span>
                 </div>
                 <div className="mt-auto pt-4 flex gap-2">
+<<<<<<< HEAD
                   <button className="bg-primary-blue text-white font-semibold text-sm py-2 rounded-lg flex-grow text-center hover:bg-blue-700 transition">
                     Add to Cart
                   </button>
+=======
+                 <Link
+  to="/cart"
+  className="bg-primary-blue text-white font-semibold text-sm py-2 rounded-lg flex-grow text-center hover:bg-blue-700 transition"
+>
+  Add to Cart
+</Link>
+
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
                   <button className="border border-primary-yellow p-2 rounded-lg hover:bg-yellow-50 transition">
                     <FaHeart className="w-4 h-4 text-primary-yellow" />
                   </button>
@@ -141,9 +151,17 @@ const ProductsPage = () => {
           </div>
         </div>
       </main>
+<<<<<<< HEAD
     <hr className="h-[3px] bg-yellow-500 border-0" />
+=======
+
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
       <Footer />
     </>
   );
 };
+<<<<<<< HEAD
+=======
+
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
 export default ProductsPage;

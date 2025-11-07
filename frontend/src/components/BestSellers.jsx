@@ -39,7 +39,11 @@ const BestSellers = () => (
         ))}
       </div>
       <div className="mt-16 text-center">
+<<<<<<< HEAD
         <a href="/products" className="inline-block bg-white text-primary-blue font-normal text-base px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">View All Products</a>
+=======
+        <a href="#" className="inline-block bg-white text-primary-blue font-normal text-base px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">View All Products</a>
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
       </div>
     </div>
   </section>

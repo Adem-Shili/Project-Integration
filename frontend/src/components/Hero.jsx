@@ -8,7 +8,11 @@ const Hero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative shadow-2xl rounded-3xl overflow-hidden">
           
+<<<<<<< HEAD
           <img src={back} alt="StockEase" className="absolute inset-0 w-full h-full object-cove" />
+=======
+           <img src={back} alt="StockEase" className="absolute inset-0 w-full h-full object-cove" />
+>>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
           
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
           <div className="relative z-10 flex flex-col justify-center h-full px-8 py-20 md:px-16 lg:px-24" style={{minHeight: '600px'}}>
