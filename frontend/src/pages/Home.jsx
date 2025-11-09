@@ -10,11 +10,7 @@ import Footer from '../components/Footer'
 
 export default function Home() {
   return (
-<<<<<<< HEAD
     <div>
-=======
-     <div>
->>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
       <Header />
       <Hero />
       <Features />
@@ -22,9 +18,5 @@ export default function Home() {
       <CTA />
       <Footer />
     </div>
-<<<<<<< HEAD
-  );
-=======
   )
->>>>>>> f97ed5adb232df83821edcf16855247c2696e46d
 }
