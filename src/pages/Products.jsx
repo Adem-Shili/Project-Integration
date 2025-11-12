@@ -141,6 +141,10 @@ const ProductsPage = () => {
           </div>
         </div>
       </main>
+<<<<<<< HEAD
+=======
+
+>>>>>>> e777cea7a42e948f468d82570f600a74f6a41968
       <Footer />
     </>
   );

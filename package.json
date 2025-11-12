@@ -12,8 +12,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
+<<<<<<< HEAD
     "react-router-dom": "^7.9.5",
     "recharts": "^3.4.1"
+=======
+    "react-router-dom": "^7.9.4"
+>>>>>>> e777cea7a42e948f468d82570f600a74f6a41968
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

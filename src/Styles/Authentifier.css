@@ -157,9 +157,12 @@ body,html,#root{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial,san
     .center-wrap{ padding:8px }
     .tabs{ width:100%; justify-content:space-between }
 }
+<<<<<<< HEAD
 .error {
   color: red;
   font-size: 12px;
   margin-top: 4px;
   display: block;
 }
+=======
+>>>>>>> e777cea7a42e948f468d82570f600a74f6a41968

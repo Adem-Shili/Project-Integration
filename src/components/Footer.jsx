@@ -4,7 +4,10 @@ import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/f
 
 const Footer = () => (
   <footer id="section-footer" className="bg-white py-20">
+<<<<<<< HEAD
 
+=======
+>>>>>>> e777cea7a42e948f468d82570f600a74f6a41968
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-12">
         {/* Brand Column */}
