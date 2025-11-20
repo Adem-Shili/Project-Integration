@@ -1,5 +1,6 @@
 package org.backend.stockease.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cart_id", nullable = false)
+    @JsonIgnore  // Prevent circular reference: CartItem -> Cart -> CartItem
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.EAGER)

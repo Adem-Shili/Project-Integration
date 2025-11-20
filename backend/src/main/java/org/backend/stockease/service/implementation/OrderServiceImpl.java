@@ -1,19 +1,29 @@
 package org.backend.stockease.service.implementation;
 
-import org.backend.stockease.entity.*;
-import org.backend.stockease.entity.enums.DeliveryStatus;
-import org.backend.stockease.entity.enums.OrderStatus;
-import org.backend.stockease.repository.*;
-import org.backend.stockease.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.backend.stockease.entity.Cart;
+import org.backend.stockease.entity.CartItem;
+import org.backend.stockease.entity.Delivery;
+import org.backend.stockease.entity.Order;
+import org.backend.stockease.entity.OrderItem;
+import org.backend.stockease.entity.User;
+import org.backend.stockease.entity.enums.DeliveryStatus;
+import org.backend.stockease.entity.enums.OrderStatus;
+import org.backend.stockease.repository.CartItemRepository;
+import org.backend.stockease.repository.CartRepository;
+import org.backend.stockease.repository.DeliveryRepository;
+import org.backend.stockease.repository.OrderItemRepository;
+import org.backend.stockease.repository.OrderRepository;
+import org.backend.stockease.repository.UserRepository;
+import org.backend.stockease.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -38,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order createOrder(Long userId, String address) {
+    public Order createOrder(Long userId, String address, String deliveryOption) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -50,27 +60,33 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Cart is empty");
         }
         
-        Order order = new Order();
-        order.setOrderNumber(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        order.setUser(user);
-        order.setStatus(OrderStatus.PENDING);
-        order.setOrderDate(LocalDateTime.now());
-        
+        // Calculate total amount first
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (CartItem cartItem : cartItems) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getProduct().getPrice());
-            orderItemRepository.save(orderItem);
-            
             totalAmount = totalAmount.add(cartItem.getProduct().getPrice()
                 .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
         
+        // Create and save Order first
+        Order order = new Order();
+        order.setOrderNumber(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        order.setUser(user);
+        // Use PENDING status (maps to "Ordered" in UI) since database constraint doesn't include ORDERED yet
+        order.setStatus(OrderStatus.PENDING);
+        order.setOrderDate(LocalDateTime.now());
         order.setTotalAmount(totalAmount);
-        order = orderRepository.save(order);
+        order.setDeliveryOption(deliveryOption != null ? deliveryOption : "standard");
+        order = orderRepository.save(order); // Save order first to get an ID
+        
+        // Now create and save OrderItems with the persisted Order
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order); // Now order has an ID
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getProduct().getPrice());
+            orderItemRepository.save(orderItem);
+        }
         
         // Create delivery
         Delivery delivery = new Delivery();

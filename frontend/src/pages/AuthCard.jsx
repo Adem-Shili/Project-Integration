@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../Styles/Authentifier.css';
+import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Input = ({ id, label, type = 'text', placeholder, value, onChange }) => (
   <label className="field" htmlFor={id}>
@@ -17,41 +19,94 @@ const Input = ({ id, label, type = 'text', placeholder, value, onChange }) => (
 )
 
 export default function AuthCard() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
   const [tab, setTab] = useState('signin') // 'signin' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [name, setName] = useState('')
-  const [remember, setRemember] = useState(false)
+  const [phone, setPhone] = useState('')
   const [agree, setAgree] = useState(false) // pour "I agree..." (signup)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
+    setSuccess('')
 
     if (tab === 'signin') {
       // validation sign in minimale
       if (!email || !password) {
-        console.warn('Please fill email and password')
+        setError('Please fill email and password')
         return
       }
-      console.log('Sign in', { email, password, remember })
-      // TODO: appeler votre API de connexion
+      
+      setLoading(true)
+      try {
+        const response = await authAPI.login(email, password)
+        
+        // Update auth context - backend returns userId, name, email, message
+        if (response.userId) {
+          const userData = {
+            id: response.userId,
+            name: response.name,
+            email: response.email
+          }
+          // Use userId as token identifier for now
+          login(response.userId.toString(), userData)
+        }
+        
+        setSuccess('Login successful! Redirecting...')
+        setTimeout(() => {
+          navigate('/')
+        }, 1000)
+      } catch (err) {
+        setError(err.message || 'Login failed. Please check your credentials.')
+      } finally {
+        setLoading(false)
+      }
     } else {
       // validation sign up
-      if (!name || !email || !password || !confirmPassword) {
-        console.warn('Please complete all fields')
+      if (!name || !email || !password || !confirmPassword || !phone) {
+        setError('Please complete all fields')
         return
       }
       if (password !== confirmPassword) {
-        console.warn("Passwords don't match")
+        setError("Passwords don't match")
         return
       }
       if (!agree) {
-        console.warn('You must accept terms and privacy policy')
+        setError('You must accept terms and privacy policy')
         return
       }
-      console.log('Sign up', { name, email, password })
-      // TODO: appeler votre API d'inscription
+      
+      setLoading(true)
+      try {
+        const response = await authAPI.register(name, email, password, phone)
+        
+        // Update auth context - backend returns userId, name, email, message
+        if (response.userId) {
+          const userData = {
+            id: response.userId,
+            name: response.name,
+            email: response.email
+          }
+          // Use userId as token identifier for now
+          login(response.userId.toString(), userData)
+        }
+        
+        setSuccess('Registration successful! Redirecting...')
+        setTimeout(() => {
+          navigate('/')
+        }, 1000)
+      } catch (err) {
+        setError(err.message || 'Registration failed. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -93,6 +148,19 @@ export default function AuthCard() {
         </button>
       </div>
 
+      {(error || success) && (
+        <div className={`message ${error ? 'error' : 'success'}`} style={{
+          padding: '12px',
+          marginBottom: '16px',
+          borderRadius: '8px',
+          backgroundColor: error ? '#fee' : '#efe',
+          color: error ? '#c33' : '#3c3',
+          textAlign: 'center'
+        }}>
+          {error || success}
+        </div>
+      )}
+
       <form className="form" onSubmit={handleSubmit}>
         {tab === 'signup' && (
           <Input
@@ -112,6 +180,17 @@ export default function AuthCard() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+
+        {tab === 'signup' && (
+          <Input
+            id="phone"
+            label="Phone Number"
+            type="tel"
+            placeholder="Enter your phone number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        )}
 
         <Input
           id="password"
@@ -133,24 +212,8 @@ export default function AuthCard() {
           />
         )}
 
-        <div className="row-between">
-          {tab === 'signin' ? (
-            <>
-              <label className="remember">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                />{' '}
-                Remember me
-              </label>
-
-              <a className="forgot" href="#" onClick={(e) => e.preventDefault()}>
-                Forgot password?
-              </a>
-            </>
-          ) : (
-            // signup: replace remember + remove Forgot password
+        {tab === 'signup' && (
+          <div className="row-between">
             <label className="remember">
               <input
                 type="checkbox"
@@ -159,43 +222,47 @@ export default function AuthCard() {
               />{' '}
               I agree to the Terms of Service  and Privacy Policy
             </label>
-          )}
-        </div>
+          </div>
+        )}
 
-        <button type="submit"
-            className={`primary-btn ${tab === 'signup' ? 'signup' : ''}`}
-          >
-          {tab === 'signin' ? 'Sign In' : 'Create Account'}
+        <button 
+          type="submit"
+          className={`primary-btn ${tab === 'signup' ? 'signup' : ''}`}
+          disabled={loading}
+        >
+          {loading ? 'Loading...' : (tab === 'signin' ? 'Sign In' : 'Create Account')}
         </button>
 
       </form>
 
       <div className="or-line" aria-hidden>
         <hr />
-        <span>Or continue with</span>
+        <span>Pick which role</span>
       </div>
 
       <div className="socials">
         <button
           type="button"
           className="social-btn"
-          onClick={() => console.log('Google login')}
+          onClick={() => console.log('Login as Client')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-            <path d="M21.6 11.2H12v2.8h5.4c-.6 2-2.2 3.4-4.6 3.4-2.6 0-4.8-2.2-4.8-4.8S10.2 8.8 12.8 8.8c1.3 0 2.2.6 2.8 1.2l2-2C16.8 6.4 15 5.6 12.8 5.6 8.6 5.6 5.2 9 5.2 13.2s3.4 7.6 7.6 7.6c6 0 9.2-4.6 9.2-8.8 0-.6 0-1-.4-1.8z" />
-          </svg>
-          Google
+          Login as Client
         </button>
 
         <button
           type="button"
           className="social-btn"
-          onClick={() => console.log('Facebook login')}
+          onClick={() => console.log('Login as Supplier')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-            <path d="M22 12.1C22 6.7 17.5 2.4 12 2.4S2 6.7 2 12.1c0 5 3.6 9.2 8.4 9.9v-7h-2.5v-2.9h2.5V9.5c0-2.4 1.4-3.8 3.6-3.8 1 0 1.9.1 2.1.1v2.3h-1.2c-1 0-1.3.6-1.3 1.2v1.5h2.6l-.4 2.9h-2.2V22C18.4 21.3 22 17.1 22 12.1z" />
-          </svg>
-          Facebook
+          Login as Supplier
+        </button>
+
+        <button
+          type="button"
+          className="social-btn"
+          onClick={() => console.log('Login as Admin')}
+        >
+          Login as Admin
         </button>
       </div>
     </div>

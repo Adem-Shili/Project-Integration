@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import pc from "../assets/pc.jpeg"
 import montre from "../assets/montre.jpg"
 import casque from "../assets/audio.jpeg"
@@ -39,7 +40,7 @@ const BestSellers = () => (
         ))}
       </div>
       <div className="mt-16 text-center">
-        <a href="/products" className="inline-block bg-white text-primary-blue font-normal text-base px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">View All Products</a>
+        <Link to="/products" className="inline-block bg-white text-primary-blue font-normal text-base px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">View All Products</Link>
       </div>
     </div>
   </section>

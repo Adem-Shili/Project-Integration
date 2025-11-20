@@ -1,13 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import TrackingInfo from '../components/Trackinginfo';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import deliveryImg from '../assets/delivery1.jpg';
+import { deliveryAPI, ordersAPI } from '../services/api';
 
 
 const DeliveryPage = () => {
+    const [orderId, setOrderId] = useState('');
+    const [trackingData, setTrackingData] = useState(null);
+    const [orderData, setOrderData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleTrackOrder = async (e) => {
+        e.preventDefault();
+        if (!orderId.trim()) {
+            setError('Please enter an Order ID');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError('');
+            
+            // First get the order to get user info
+            const order = await ordersAPI.getByNumber(orderId.trim());
+            if (!order) {
+                throw new Error('Order not found');
+            }
+            setOrderData(order);
+
+            // Then get delivery info
+            const delivery = await deliveryAPI.getByOrderNumber(orderId.trim());
+            if (!delivery) {
+                throw new Error('Delivery information not found');
+            }
+            setTrackingData(delivery);
+        } catch (err) {
+            setError(err.message || 'Failed to track order. Please check your Order ID.');
+            setTrackingData(null);
+            setOrderData(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div>
             <Header />
@@ -49,13 +89,24 @@ const DeliveryPage = () => {
                             </p>
 
                             <div className="flex flex-wrap items-center gap-4 mt-4">
-                                <button className="bg-white text-blue-600 font-semibold px-5 py-3 rounded-lg shadow hover:shadow-lg transition">
+                                <button 
+                                    onClick={() => {
+                                        const trackingSection = document.getElementById('tracking-input');
+                                        if (trackingSection) {
+                                            trackingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                    }}
+                                    className="bg-white text-blue-600 font-semibold px-5 py-3 rounded-lg shadow hover:shadow-lg transition"
+                                >
                                     Track Package
                                 </button>
 
-                                <button className="border border-white/30 text-white/95 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                                <Link 
+                                    to="/about"
+                                    className="border border-white/30 text-white/95 px-4 py-3 rounded-lg hover:bg-white/10 transition inline-block"
+                                >
                                     Learn More
-                                </button>
+                                </Link>
                             </div>
 
                             <div className="mt-6 flex gap-4 items-center text-sm text-white/90">
@@ -127,25 +178,41 @@ const DeliveryPage = () => {
                         </div>
 
                         <h2 className="text-2xl font-bold mt-4">Enter Your Tracking Details</h2>
-                        <p className="text-slate-500 mt-2">Enter your Order ID or Email Address to track your package</p>
+                        <p className="text-slate-500 mt-2">Enter your Order ID to track your package</p>
                     </div>
 
-                    <form className="max-w-2xl mx-auto" onSubmit={(e) => { e.preventDefault(); /* handle submit */ }}>
+                    <form id="tracking-input" className="max-w-2xl mx-auto" onSubmit={handleTrackOrder}>
                         <div className="flex gap-4 items-center">
                             <input
                                 type="text"
-                                placeholder="Enter Order ID or Email Address"
+                                placeholder="Enter Order ID"
+                                value={orderId}
+                                onChange={(e) => setOrderId(e.target.value)}
                                 className="flex-1 px-4 py-3 rounded-xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                             />
-                            <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition">Track Order</button>
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Tracking...' : 'Track Order'}
+                            </button>
                         </div>
+
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+                                {error}
+                            </div>
+                        )}
 
                         <p className="text-sm text-slate-500 text-center mt-4">We will send real-time updates to your email or phone.</p>
                     </form>
                 </div>
             </section>
              {/* === ICI : insertion de TrackingInfo === */}
-            <TrackingInfo />
+            {trackingData && orderData && (
+                <TrackingInfo delivery={trackingData} order={orderData} />
+            )}
             {/* === fin insertion === */}
             <hr className="h-[2px] bg-yellow-500 border-0" />
             <Footer />

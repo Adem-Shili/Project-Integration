@@ -161,6 +161,24 @@ const AboutPage = () => {
         </div>
       </section>
 
+      {/* --- DELIVERY TRACKING EXPLANATION --- */}
+      <section className="max-w-6xl mx-auto py-16 px-6 mb-16">
+        <h3 className="text-3xl text-primary-blue mb-6 font-semibold">
+          Delivery Tracking
+        </h3>
+        <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
+          <p className="text-text-muted leading-7 mb-4">
+            Our delivery tracking system allows you to monitor your order's journey from the moment it's placed until it arrives at your doorstep. Simply enter your Order ID on our Delivery page to get real-time updates on your package's status.
+          </p>
+          <p className="text-text-muted leading-7 mb-4">
+            You'll be able to see when your order is confirmed, when it's in transit, when it's out for delivery, and when it has been successfully delivered. Each status update is color-coded to make it easy to understand where your package is in the delivery process.
+          </p>
+          <p className="text-text-muted leading-7">
+            We understand how important it is to know where your order is, which is why we've built a transparent and easy-to-use tracking system that keeps you informed every step of the way.
+          </p>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

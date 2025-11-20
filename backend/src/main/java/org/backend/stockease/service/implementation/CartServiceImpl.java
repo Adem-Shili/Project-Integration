@@ -35,7 +35,8 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findByUserId(userId)
             .orElseGet(() -> {
                 Cart newCart = new Cart();
-                newCart.setUser(userRepository.findById(userId).orElseThrow());
+                newCart.setUser(userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)));
                 return cartRepository.save(newCart);
             });
         return cartItemRepository.findByCartId(cart.getId());
@@ -44,15 +45,21 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
+        // Validate user exists
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
+        
         Cart cart = cartRepository.findByUserId(userId)
             .orElseGet(() -> {
                 Cart newCart = new Cart();
-                newCart.setUser(userRepository.findById(userId).orElseThrow());
+                newCart.setUser(userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)));
                 return cartRepository.save(newCart);
             });
         
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
         
         Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
         

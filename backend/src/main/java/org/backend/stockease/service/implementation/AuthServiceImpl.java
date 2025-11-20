@@ -30,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword()); // In production, hash the password
+        user.setPhone(request.getPhone());
         user = userRepository.save(user);
         
         // Create cart for new user

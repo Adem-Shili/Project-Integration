@@ -1,5 +1,6 @@
 package org.backend.stockease.controller;
 
+import lombok.AllArgsConstructor;
 import org.backend.stockease.entity.CartItem;
 import org.backend.stockease.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+@AllArgsConstructor
 
 @RestController
 @RequestMapping("/api/cart")

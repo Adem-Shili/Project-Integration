@@ -1,10 +1,12 @@
 package org.backend.stockease.controller;
 
+import lombok.AllArgsConstructor;
 import org.backend.stockease.entity.Delivery;
 import org.backend.stockease.service.DeliveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+@AllArgsConstructor
 
 @RestController
 @RequestMapping("/api/delivery")
