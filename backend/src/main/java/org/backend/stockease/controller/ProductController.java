@@ -142,6 +142,29 @@ public class ProductController {
 
     @GetMapping("/shop/{shopId}")
     public ResponseEntity<List<Product>> getProductsByShop(@PathVariable Long shopId) {
+        // Return all products (including inactive) for sellers to manage their own shops
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                boolean isSeller = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SELLER"));
+                
+                if (isSeller) {
+                    // Check if seller owns this shop
+                    Long userId = Long.parseLong(auth.getName());
+                    List<Shop> shops = shopService.getAllShopsByOwnerId(userId);
+                    boolean ownsShop = shops.stream().anyMatch(s -> s.getId().equals(shopId));
+                    
+                    if (ownsShop) {
+                        // Sellers can see all their products including inactive ones
+                        return ResponseEntity.ok(productService.getAllProductsByShopId(shopId));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If auth check fails, fall through to return only active products
+        }
+        // Regular users or sellers viewing other shops only see active products
         return ResponseEntity.ok(productService.getProductsByShopId(shopId));
     }
 

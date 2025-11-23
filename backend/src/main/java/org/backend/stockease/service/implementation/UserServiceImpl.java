@@ -1,12 +1,15 @@
 package org.backend.stockease.service.implementation;
 
+import org.backend.stockease.entity.Shop;
 import org.backend.stockease.entity.User;
+import org.backend.stockease.repository.ShopRepository;
 import org.backend.stockease.repository.UserRepository;
 import org.backend.stockease.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +19,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private ShopRepository shopRepository;
 
     @Override
     public List<User> getAllUsers() {
@@ -49,7 +55,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long userId) {
+        // First, delete or deactivate all shops owned by this user
+        List<Shop> shops = shopRepository.findAllByOwnerId(userId);
+        for (Shop shop : shops) {
+            // Deactivate shop and its products instead of deleting to preserve order history
+            shop.setIsActive(false);
+            shopRepository.save(shop);
+        }
+        
+        // Delete the user (cascade will handle orders and cart)
         userRepository.deleteById(userId);
     }
 

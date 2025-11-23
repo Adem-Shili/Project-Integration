@@ -12,14 +12,27 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
     
-    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Product> searchProducts(@Param("keyword") String keyword);
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId")
+    List<Product> findActiveByCategoryId(@Param("categoryId") Long categoryId);
+    
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Product> searchActiveProducts(@Param("keyword") String keyword);
+    
+    @Query("SELECT p FROM Product p WHERE p.isActive = true")
+    List<Product> findAllActive();
     
     List<Product> findByIsBestSellerTrue();
     
-    List<Product> findByShopId(Long shopId);
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isBestSeller = true")
+    List<Product> findActiveBestSellers();
+    
+    @Query("SELECT p FROM Product p WHERE p.shop.id = :shopId AND p.isActive = true")
+    List<Product> findByShopId(@Param("shopId") Long shopId);
     
     @Query("SELECT p FROM Product p WHERE p.shop.id = :shopId AND p.category.id = :categoryId")
     List<Product> findByShopIdAndCategoryId(@Param("shopId") Long shopId, @Param("categoryId") Long categoryId);
+    
+    @Query("SELECT p FROM Product p WHERE p.shop.id = :shopId")
+    List<Product> findAllByShopId(@Param("shopId") Long shopId);
 }
 

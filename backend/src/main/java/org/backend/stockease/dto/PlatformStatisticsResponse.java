@@ -20,3 +20,5 @@ public class PlatformStatisticsResponse {
     private BigDecimal totalSalesRevenue;
 }
 
+
+

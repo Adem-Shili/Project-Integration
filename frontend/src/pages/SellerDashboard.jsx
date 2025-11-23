@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { shopsAPI, productsAPI, categoriesAPI, subscriptionPlansAPI } from '../services/api';
-import { FaChartLine, FaShoppingBag, FaDollarSign, FaBox, FaPlus, FaEdit, FaTrash, FaStore } from 'react-icons/fa';
+import { FaChartLine, FaShoppingBag, FaDollarSign, FaBox, FaPlus, FaEdit, FaTrash, FaStore, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function SellerDashboard() {
   const navigate = useNavigate();
@@ -79,14 +79,13 @@ export default function SellerDashboard() {
 
   const loadShopData = async (shopId) => {
     try {
-      const [stats, allProducts] = await Promise.all([
+      const [stats, shopProducts] = await Promise.all([
         shopsAPI.getShopStatistics(shopId).catch(() => null),
-        productsAPI.getAll()
+        productsAPI.getByShop(shopId) // Get all products for this shop (including inactive for sellers)
       ]);
 
       setStatistics(stats);
-      const shopProducts = allProducts.filter(p => p.shop?.id === shopId);
-      setProducts(shopProducts);
+      setProducts(shopProducts || []);
     } catch (err) {
       console.error('Error loading shop data:', err);
     }
@@ -135,7 +134,8 @@ export default function SellerDashboard() {
         originalPrice: productForm.originalPrice ? parseFloat(productForm.originalPrice) : null,
         stock: parseInt(productForm.stock),
         category: { id: parseInt(productForm.categoryId) },
-        shop: { id: shopId }
+        shop: { id: shopId },
+        isActive: editingProduct ? editingProduct.isActive : true // New products are active by default
       };
 
       if (editingProduct) {
@@ -174,23 +174,26 @@ export default function SellerDashboard() {
       stock: product.stock.toString(),
       imageUrl: product.imageUrl || '',
       categoryId: product.category?.id?.toString() || '',
-      shopId: product.shop?.id?.toString() || (selectedShop ? selectedShop.id.toString() : '')
+      shopId: product.shop?.id?.toString() || (selectedShop ? selectedShop.id.toString() : ''),
+      isActive: product.isActive !== undefined ? product.isActive : true
     });
     setShowProductForm(true);
   };
-
-  const handleDeleteProduct = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+  const handleToggleProductActive = async (product) => {
     try {
-      await productsAPI.delete(productId);
+      setError('');
+      const updatedProduct = {
+        ...product,
+        isActive: !product.isActive
+      };
+      await productsAPI.update(product.id, updatedProduct);
       if (selectedShop) {
         await loadShopData(selectedShop.id);
       }
     } catch (err) {
-      setError('Failed to delete product');
+      setError(err.message || 'Failed to update product status');
     }
   };
-
   if (loading) {
     return (
       <>
@@ -579,6 +582,17 @@ export default function SellerDashboard() {
                           </span>
                           <span style={{ color: '#666' }}>Stock: {product.stock}</span>
                         </div>
+                        <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            padding: '4px 8px', 
+                            borderRadius: '4px',
+                            backgroundColor: product.isActive ? '#d4edda' : '#f8d7da',
+                            color: product.isActive ? '#155724' : '#721c24'
+                          }}>
+                            {product.isActive ? 'Active' : 'Hidden'}
+                          </span>
+                        </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button
                             onClick={() => handleEditProduct(product)}
@@ -599,11 +613,11 @@ export default function SellerDashboard() {
                             <FaEdit /> Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleToggleProductActive(product)}
                             style={{
                               flex: 1,
                               padding: '8px',
-                              backgroundColor: '#dc3545',
+                              backgroundColor: product.isActive ? '#ffc107' : '#28a745',
                               color: '#fff',
                               border: 'none',
                               borderRadius: '6px',
@@ -614,8 +628,9 @@ export default function SellerDashboard() {
                               gap: '6px'
                             }}
                           >
-                            <FaTrash /> Delete
+                            {product.isActive ? <><FaEyeSlash /> Hide</> : <><FaEye /> Show</>}
                           </button>
+                          
                         </div>
                       </div>
                     ))}

@@ -20,3 +20,5 @@ public class ShopStatisticsResponse {
     private Integer monthlyOrders;
 }
 
+
+

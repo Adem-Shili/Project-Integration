@@ -7,6 +7,8 @@ import org.backend.stockease.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,10 +53,26 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        // Users can delete their own account, admins can delete anyone's
-        userService.deleteUser(userId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+        try {
+            // Verify user is deleting their own account or is admin
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                Long currentUserId = Long.parseLong(auth.getName());
+                boolean isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                
+                if (!isAdmin && !currentUserId.equals(userId)) {
+                    return ResponseEntity.status(403).body("You can only delete your own account");
+                }
+            }
+            
+            // Users can delete their own account, admins can delete anyone's
+            userService.deleteUser(userId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error deleting account: " + e.getMessage());
+        }
     }
 
     // User-specific endpoints

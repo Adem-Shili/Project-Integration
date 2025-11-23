@@ -39,9 +39,10 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            // Initialize Admin User
-            initializeAdminUser();
+            // Initialize admin user if they don't exist
 
+            initializeAdminUser();
+            initializedefaultusers();
             // Initialize subscription plans if they don't exist
             if (subscriptionPlanRepository.count() == 0) {
                 initializeSubscriptionPlans();
@@ -82,6 +83,25 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("ℹ️  Admin user already exists. Skipping admin initialization.");
         }
     }
+
+    private void initializedefaultusers() {
+        // create a seller with email shop@gmail.com and pw:12345678 and client with email client@gmail.com and pw:187654321
+        User seller = new User();
+        seller.setName("Shop");
+        seller.setEmail("shop@gmail.com");
+        seller.setPassword(passwordEncoder.encode("12345678"));
+        seller.setRole(Role.SELLER);
+        userRepository.save(seller);
+        System.out.println("✅ Created default seller user.");
+        User client = new User();
+        client.setName("Client");
+        client.setEmail("client@gmail.com");
+        client.setPassword(passwordEncoder.encode("187654321"));
+        client.setRole(Role.CLIENT);
+        userRepository.save(client);
+        System.out.println("✅ Created default client user.");
+    }
+
 
     private void initializeSubscriptionPlans() {
         List<SubscriptionPlan> plans = Arrays.asList(
@@ -252,6 +272,7 @@ public class DataInitializer implements CommandLineRunner {
         product.setRating(rating);
         product.setIsBestSeller(isBestSeller);
         product.setImageUrl(imageUrl);
+        product.setIsActive(true); // Default products are active
         return product;
     }
 }

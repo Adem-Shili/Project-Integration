@@ -15,7 +15,7 @@ import java.util.Date;
 public class JwtProvider {
 
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-    private final long expirationTime = 86400000; // 24 hours
+    private final long expirationTime = 2592000000L; // 30 days (30 * 24 * 60 * 60 * 1000)
 
     public String generateToken(Authentication authentication) {
         User principal = (User) authentication.getPrincipal();

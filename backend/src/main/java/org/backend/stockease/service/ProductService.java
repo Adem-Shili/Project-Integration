@@ -12,6 +12,7 @@ public interface ProductService {
     List<Product> searchProducts(String keyword);
     List<Product> getBestSellers();
     List<Product> getProductsByShopId(Long shopId);
+    List<Product> getAllProductsByShopId(Long shopId); // Includes inactive products
     Product createProduct(Product product);
     Optional<Product> updateProduct(Long id, Product productDetails);
     void deleteProduct(Long id);

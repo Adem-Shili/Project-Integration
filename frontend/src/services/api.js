@@ -136,6 +136,10 @@ export const productsAPI = {
     return apiRequest('/api/products/bestsellers');
   },
 
+  getByShop: async (shopId) => {
+    return apiRequest(`/api/products/shop/${shopId}`);
+  },
+
   create: async (productData) => {
     return apiRequest('/api/products', {
       method: 'POST',

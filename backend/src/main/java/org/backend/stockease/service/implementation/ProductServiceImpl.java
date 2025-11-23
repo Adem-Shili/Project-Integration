@@ -17,7 +17,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findAllActive();
     }
 
     @Override
@@ -27,17 +27,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId);
+        return productRepository.findActiveByCategoryId(categoryId);
     }
 
     @Override
     public List<Product> searchProducts(String keyword) {
-        return productRepository.searchProducts(keyword);
+        return productRepository.searchActiveProducts(keyword);
     }
 
     @Override
     public List<Product> getBestSellers() {
-        return productRepository.findByIsBestSellerTrue();
+        return productRepository.findActiveBestSellers();
     }
 
     @Override
@@ -46,7 +46,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<Product> getAllProductsByShopId(Long shopId) {
+        return productRepository.findAllByShopId(shopId);
+    }
+
+    @Override
     public Product createProduct(Product product) {
+        // Set isActive to true by default if not specified
+        if (product.getIsActive() == null) {
+            product.setIsActive(true);
+        }
         return productRepository.save(product);
     }
 
@@ -61,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
             product.setImageUrl(productDetails.getImageUrl());
             product.setRating(productDetails.getRating());
             product.setIsBestSeller(productDetails.getIsBestSeller());
+            if (productDetails.getIsActive() != null) product.setIsActive(productDetails.getIsActive());
             product.setCategory(productDetails.getCategory());
             if (productDetails.getShop() != null) product.setShop(productDetails.getShop());
             return productRepository.save(product);
