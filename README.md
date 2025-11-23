@@ -6,4 +6,4 @@ this projects concept is an E-commerce management platform where :
 project is gonna be split in 2 parts : 
 - frontend will be made with React
 - backend will be made with Spring boot
-
+- database in H2 console
