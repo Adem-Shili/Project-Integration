@@ -6,10 +6,16 @@ import java.util.List;
 
 import org.backend.stockease.entity.Category;
 import org.backend.stockease.entity.Product;
+import org.backend.stockease.entity.SubscriptionPlan;
+import org.backend.stockease.entity.User;
+import org.backend.stockease.entity.enums.Role;
 import org.backend.stockease.repository.CategoryRepository;
 import org.backend.stockease.repository.ProductRepository;
+import org.backend.stockease.repository.SubscriptionPlanRepository;
+import org.backend.stockease.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,9 +27,28 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SubscriptionPlanRepository subscriptionPlanRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) throws Exception {
         try {
+            // Initialize Admin User
+            initializeAdminUser();
+
+            // Initialize subscription plans if they don't exist
+            if (subscriptionPlanRepository.count() == 0) {
+                initializeSubscriptionPlans();
+            } else {
+                System.out.println("ℹ️  Subscription plans already exist. Skipping subscription plan initialization.");
+            }
+
             // Initialize categories if they don't exist
             if (categoryRepository.count() == 0) {
                 initializeCategories();
@@ -42,6 +67,54 @@ public class DataInitializer implements CommandLineRunner {
             System.err.println("❌ Error initializing data: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void initializeAdminUser() {
+        if (userRepository.findByEmail("admin").isEmpty()) {
+            User admin = new User();
+            admin.setName("Admin");
+            admin.setEmail("admin@gmail.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(Role.ADMIN);
+            userRepository.save(admin);
+            System.out.println("✅ Created default admin user.");
+        } else {
+            System.out.println("ℹ️  Admin user already exists. Skipping admin initialization.");
+        }
+    }
+
+    private void initializeSubscriptionPlans() {
+        List<SubscriptionPlan> plans = Arrays.asList(
+            createSubscriptionPlan("free", "Free plan for getting started and understanding the platform", 
+                new BigDecimal("0.00"), 1, 50, 100, true, false, false),
+            createSubscriptionPlan("Basic", "Perfect for small shops just getting started", 
+                new BigDecimal("29.99"), 1, 50, 100, true, false, false),
+            createSubscriptionPlan("Professional", "Ideal for growing businesses", 
+                new BigDecimal("79.99"), 1, 500, 1000, true, true, false),
+            createSubscriptionPlan("Enterprise", "For established businesses with high volume", 
+                new BigDecimal("199.99"), 1, -1, -1, true, true, true)
+        );
+
+        subscriptionPlanRepository.saveAll(plans);
+        System.out.println("✅ Created " + plans.size() + " subscription plans");
+    }
+
+    private SubscriptionPlan createSubscriptionPlan(String name, String description, 
+            BigDecimal monthlyPrice, Integer durationMonths, Integer maxProducts, 
+            Integer maxOrdersPerMonth, Boolean analyticsEnabled, Boolean customDomainEnabled, 
+            Boolean prioritySupport) {
+        SubscriptionPlan plan = new SubscriptionPlan();
+        plan.setName(name);
+        plan.setDescription(description);
+        plan.setMonthlyPrice(monthlyPrice);
+        plan.setDurationMonths(durationMonths);
+        plan.setMaxProducts(maxProducts);
+        plan.setMaxOrdersPerMonth(maxOrdersPerMonth);
+        plan.setAnalyticsEnabled(analyticsEnabled);
+        plan.setCustomDomainEnabled(customDomainEnabled);
+        plan.setPrioritySupport(prioritySupport);
+        plan.setIsActive(true);
+        return plan;
     }
 
     private void initializeCategories() {

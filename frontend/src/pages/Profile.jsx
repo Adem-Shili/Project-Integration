@@ -17,6 +17,8 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', address: '' });
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -92,26 +94,53 @@ const Profile = () => {
     
     try {
       setSaving(true);
+      setError('');
       const userId = typeof authUser.id === 'string' ? parseInt(authUser.id, 10) : authUser.id;
       
       const updatedUser = await userAPI.update(userId, editForm);
-      setUser(updatedUser);
-      setEditing(false);
-      
-      // Update auth context if needed
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        parsedUser.name = updatedUser.name;
-        parsedUser.email = updatedUser.email;
-        localStorage.setItem('user', JSON.stringify(parsedUser));
-        window.dispatchEvent(new Event('authStateChange'));
+      if (updatedUser) {
+        setUser(updatedUser);
+        setEditing(false);
+        
+        // Update auth context if needed
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          parsedUser.name = updatedUser.name;
+          parsedUser.email = updatedUser.email;
+          localStorage.setItem('user', JSON.stringify(parsedUser));
+          window.dispatchEvent(new Event('authStateChange'));
+        }
       }
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      setError(err.message || 'Failed to update profile. Please try again.');
       console.error('Error updating profile:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!authUser?.id) return;
+    
+    try {
+      setDeleting(true);
+      setError('');
+      const userId = typeof authUser.id === 'string' ? parseInt(authUser.id, 10) : authUser.id;
+      
+      await userAPI.delete(userId);
+      
+      // Logout and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.dispatchEvent(new Event('authStateChange'));
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Failed to delete account. Please try again.');
+      console.error('Error deleting account:', err);
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -307,16 +336,38 @@ const Profile = () => {
                     <p className="text-sm text-gray-500 mt-4">Saving...</p>
                   )}
 
-                  {/* Novice Button */}
+                  {/* Delete Account Button */}
                   <button
-                    className="w-full mt-6 border-2 border-primary-yellow text-primary-yellow font-semibold px-6 py-3 rounded-lg hover:bg-yellow-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => {
-                      // Non-functional for now as requested
-                    }}
-                    disabled
+                    className="w-full mt-6 bg-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deleting}
                   >
-                    Get Novice
+                    {deleting ? 'Deleting...' : 'Delete Account'}
                   </button>
+
+                  {showDeleteConfirm && (
+                    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-800 mb-3">
+                        Are you sure you want to delete your account? This action cannot be undone.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDeleteAccount}
+                          disabled={deleting}
+                          className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition disabled:opacity-50"
+                        >
+                          Yes, Delete
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          disabled={deleting}
+                          className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

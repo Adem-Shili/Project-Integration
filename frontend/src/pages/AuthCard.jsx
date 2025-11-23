@@ -27,7 +27,8 @@ export default function AuthCard() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [agree, setAgree] = useState(false) // pour "I agree..." (signup)
+  const [role, setRole] = useState('CLIENT'); // Add role state
+  const [agree, setAgree] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -38,7 +39,6 @@ export default function AuthCard() {
     setSuccess('')
 
     if (tab === 'signin') {
-      // validation sign in minimale
       if (!email || !password) {
         setError('Please fill email and password')
         return
@@ -48,28 +48,25 @@ export default function AuthCard() {
       try {
         const response = await authAPI.login(email, password)
         
-        // Update auth context - backend returns userId, name, email, message
         if (response.userId) {
           const userData = {
             id: response.userId,
             name: response.name,
-            email: response.email
+            email: response.email,
+            role: response.role,
+            token: response.token,
           }
-          // Use userId as token identifier for now
-          login(response.userId.toString(), userData)
+          login(response.token, userData)
         }
         
         setSuccess('Login successful! Redirecting...')
-        setTimeout(() => {
-          navigate('/')
-        }, 1000)
+        setTimeout(() => navigate('/'), 1000)
       } catch (err) {
         setError(err.message || 'Login failed. Please check your credentials.')
       } finally {
         setLoading(false)
       }
     } else {
-      // validation sign up
       if (!name || !email || !password || !confirmPassword || !phone) {
         setError('Please complete all fields')
         return
@@ -85,23 +82,22 @@ export default function AuthCard() {
       
       setLoading(true)
       try {
-        const response = await authAPI.register(name, email, password, phone)
+        // Pass role to the register function
+        const response = await authAPI.register(name, email, password, phone, role)
         
-        // Update auth context - backend returns userId, name, email, message
         if (response.userId) {
           const userData = {
             id: response.userId,
             name: response.name,
-            email: response.email
+            email: response.email,
+            role: response.role,
+            token: response.token,
           }
-          // Use userId as token identifier for now
-          login(response.userId.toString(), userData)
+          login(response.token, userData)
         }
         
         setSuccess('Registration successful! Redirecting...')
-        setTimeout(() => {
-          navigate('/')
-        }, 1000)
+        setTimeout(() => navigate('/'), 1000)
       } catch (err) {
         setError(err.message || 'Registration failed. Please try again.')
       } finally {
@@ -111,161 +107,148 @@ export default function AuthCard() {
   }
 
   return (
-    
     <div className="app-bg">
       <div className="top-bar">
         <Link to="/" className="back-link">← Back to Home</Link>
-
       </div>
+      
       <main className="center-wrap">
         <h1 className="welcome-title">Welcome to StockEase</h1>
         <p className="subtitle">Sign in to your account or create a new one</p>
         
-    <div className="card">
-      <div className="card-header">
-        <div className="card-title">Account Access</div>
-        <div className="card-sub">Choose how you'd like to continue</div>
-      </div>
-
-      <div className="tabs" role="tablist" aria-label="Auth tabs">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'signin'}
-          className={`tab ${tab === 'signin' ? 'active' : ''}`}
-          onClick={() => setTab('signin')}
-        >
-          Sign In
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'signup'}
-          className={`tab ${tab === 'signup' ? 'active' : ''}`}
-          onClick={() => setTab('signup')}
-        >
-          Sign Up
-        </button>
-      </div>
-
-      {(error || success) && (
-        <div className={`message ${error ? 'error' : 'success'}`} style={{
-          padding: '12px',
-          marginBottom: '16px',
-          borderRadius: '8px',
-          backgroundColor: error ? '#fee' : '#efe',
-          color: error ? '#c33' : '#3c3',
-          textAlign: 'center'
-        }}>
-          {error || success}
-        </div>
-      )}
-
-      <form className="form" onSubmit={handleSubmit}>
-        {tab === 'signup' && (
-          <Input
-            id="full-name"
-            label="Full name"
-            placeholder="Enter your full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        )}
-
-        <Input
-          id="email"
-          label="Email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        {tab === 'signup' && (
-          <Input
-            id="phone"
-            label="Phone Number"
-            type="tel"
-            placeholder="Enter your phone number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        )}
-
-        <Input
-          id="password"
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        {tab === 'signup' && (
-          <Input
-            id="confirm-password"
-            label="Confirm Password"
-            type="password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        )}
-
-        {tab === 'signup' && (
-          <div className="row-between">
-            <label className="remember">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-              />{' '}
-              I agree to the Terms of Service  and Privacy Policy
-            </label>
+        <div className="card">
+          <div className="card-header">
+            <div className="card-title">Account Access</div>
+            <div className="card-sub">Choose how you'd like to continue</div>
           </div>
-        )}
 
-        <button 
-          type="submit"
-          className={`primary-btn ${tab === 'signup' ? 'signup' : ''}`}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : (tab === 'signin' ? 'Sign In' : 'Create Account')}
-        </button>
+          <div className="tabs" role="tablist" aria-label="Auth tabs">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'signin'}
+              className={`tab ${tab === 'signin' ? 'active' : ''}`}
+              onClick={() => setTab('signin')}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'signup'}
+              className={`tab ${tab === 'signup' ? 'active' : ''}`}
+              onClick={() => setTab('signup')}
+            >
+              Sign Up
+            </button>
+          </div>
 
-      </form>
+          {(error || success) && (
+            <div className={`message ${error ? 'error' : 'success'}`} style={{
+              padding: '12px',
+              marginBottom: '16px',
+              borderRadius: '8px',
+              backgroundColor: error ? '#fee' : '#efe',
+              color: error ? '#c33' : '#3c3',
+              textAlign: 'center'
+            }}>
+              {error || success}
+            </div>
+          )}
 
-      <div className="or-line" aria-hidden>
-        <hr />
-        <span>Pick which role</span>
-      </div>
+          <form className="form" onSubmit={handleSubmit}>
+            {tab === 'signup' && (
+              <Input
+                id="full-name"
+                label="Full name"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            )}
 
-      <div className="socials">
-        <button
-          type="button"
-          className="social-btn"
-          onClick={() => console.log('Login as Client')}
-        >
-          Login as Client
-        </button>
+            <Input
+              id="email"
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-        <button
-          type="button"
-          className="social-btn"
-          onClick={() => console.log('Login as Supplier')}
-        >
-          Login as Supplier
-        </button>
+            {tab === 'signup' && (
+              <Input
+                id="phone"
+                label="Phone Number"
+                type="tel"
+                placeholder="Enter your phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            )}
 
-        <button
-          type="button"
-          className="social-btn"
-          onClick={() => console.log('Login as Admin')}
-        >
-          Login as Admin
-        </button>
-      </div>
-    </div>
+            <Input
+              id="password"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {tab === 'signup' && (
+              <>
+                <Input
+                  id="confirm-password"
+                  label="Confirm Password"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+
+                <div className="field">
+                  <div className="field-label">Choose your role</div>
+                  <div className="role-selector">
+                    <button
+                      type="button"
+                      className={`role-btn ${role === 'CLIENT' ? 'active' : ''}`}
+                      onClick={() => setRole('CLIENT')}
+                    >
+                      Client
+                    </button>
+                    <button
+                      type="button"
+                      className={`role-btn ${role === 'SELLER' ? 'active' : ''}`}
+                      onClick={() => setRole('SELLER')}
+                    >
+                      Seller
+                    </button>
+                  </div>
+                </div>
+
+                <div className="row-between">
+                  <label className="remember">
+                    <input
+                      type="checkbox"
+                      checked={agree}
+                      onChange={(e) => setAgree(e.target.checked)}
+                    />{' '}
+                    I agree to the Terms of Service and Privacy Policy
+                  </label>
+                </div>
+              </>
+            )}
+
+            <button 
+              type="submit"
+              className={`primary-btn ${tab === 'signup' ? 'signup' : ''}`}
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : (tab === 'signin' ? 'Sign In' : 'Create Account')}
+            </button>
+          </form>
+        </div>
       </main>
     </div>
   )

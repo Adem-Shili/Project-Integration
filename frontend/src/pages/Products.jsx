@@ -113,20 +113,28 @@ const ProductsPage = () => {
     const quantity = productQuantities[productId] || 1;
 
     try {
+      setError('');
       setAddingToCart({ ...addingToCart, [productId]: true });
       // Ensure userId is a number
       const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
       const productIdNum = typeof productId === 'string' ? parseInt(productId, 10) : productId;
       
-      await cartAPI.addItem(userId, productIdNum, quantity);
-      setSuccessMessage('Product added to cart!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-      // Reset quantity after adding
-      setProductQuantities({ ...productQuantities, [productId]: 1 });
-      // Notify header to refresh cart count
-      window.dispatchEvent(new Event('cartUpdated'));
+      const result = await cartAPI.addItem(userId, productIdNum, quantity);
+      if (result !== null) {
+        setSuccessMessage('Product added to cart!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        // Reset quantity after adding
+        setProductQuantities({ ...productQuantities, [productId]: 1 });
+        // Notify header to refresh cart count
+        window.dispatchEvent(new Event('cartUpdated'));
+      } else {
+        setSuccessMessage('Product added to cart!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        setProductQuantities({ ...productQuantities, [productId]: 1 });
+        window.dispatchEvent(new Event('cartUpdated'));
+      }
     } catch (err) {
-      setError(err.message || 'Failed to add product to cart.');
+      setError(err.message || 'Failed to add product to cart. Please try again.');
       console.error('Error adding to cart:', err);
     } finally {
       setAddingToCart({ ...addingToCart, [productId]: false });

@@ -39,5 +39,37 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getBestSellers() {
         return productRepository.findByIsBestSellerTrue();
     }
+
+    @Override
+    public List<Product> getProductsByShopId(Long shopId) {
+        return productRepository.findByShopId(shopId);
+    }
+
+    @Override
+    public Product createProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Optional<Product> updateProduct(Long id, Product productDetails) {
+        return productRepository.findById(id).map(product -> {
+            product.setName(productDetails.getName());
+            product.setDescription(productDetails.getDescription());
+            product.setPrice(productDetails.getPrice());
+            product.setOriginalPrice(productDetails.getOriginalPrice());
+            product.setStock(productDetails.getStock());
+            product.setImageUrl(productDetails.getImageUrl());
+            product.setRating(productDetails.getRating());
+            product.setIsBestSeller(productDetails.getIsBestSeller());
+            product.setCategory(productDetails.getCategory());
+            if (productDetails.getShop() != null) product.setShop(productDetails.getShop());
+            return productRepository.save(product);
+        });
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
+    }
 }
 

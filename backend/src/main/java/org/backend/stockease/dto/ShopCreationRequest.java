@@ -7,11 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
-    private String name;
-    private String email;
-    private String password;
-    private String phone;
-    private String role;
+public class ShopCreationRequest {
+    private String shopName;
+    private String description;
+    private Long subscriptionPlanId;
 }
 

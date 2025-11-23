@@ -12,6 +12,9 @@ import PaymentPage from "./pages/PaymentPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import AboutPage from "./pages/AboutPage";
 import Profile from "./pages/Profile";
+import SellerRegistrationForm from "./components/SellerRegistrationForm";
+import SellerDashboard from "./pages/SellerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -28,6 +31,9 @@ function App() {
         <Route path="/confirmation/:orderNumber" element={<OrderConfirmation />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/seller/setup" element={<SellerRegistrationForm />} />
+        <Route path="/seller/dashboard" element={<SellerDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </AuthProvider>
   )

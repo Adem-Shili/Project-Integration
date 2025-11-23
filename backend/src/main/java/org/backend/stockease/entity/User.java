@@ -2,11 +2,15 @@ package org.backend.stockease.entity;
 
 import java.util.List;
 
+import org.backend.stockease.entity.enums.Role;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,6 +45,10 @@ public class User {
     @Column(nullable = false)
     @JsonIgnore  // Never expose password in JSON
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.CLIENT;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore  // Prevent circular reference: User -> Order -> User

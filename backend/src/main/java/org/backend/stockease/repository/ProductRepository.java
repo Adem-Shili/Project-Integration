@@ -16,5 +16,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> searchProducts(@Param("keyword") String keyword);
     
     List<Product> findByIsBestSellerTrue();
+    
+    List<Product> findByShopId(Long shopId);
+    
+    @Query("SELECT p FROM Product p WHERE p.shop.id = :shopId AND p.category.id = :categoryId")
+    List<Product> findByShopIdAndCategoryId(@Param("shopId") Long shopId, @Param("categoryId") Long categoryId);
 }
 

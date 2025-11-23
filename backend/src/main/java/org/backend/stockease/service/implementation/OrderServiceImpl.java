@@ -11,6 +11,7 @@ import org.backend.stockease.entity.CartItem;
 import org.backend.stockease.entity.Delivery;
 import org.backend.stockease.entity.Order;
 import org.backend.stockease.entity.OrderItem;
+import org.backend.stockease.entity.Shop;
 import org.backend.stockease.entity.User;
 import org.backend.stockease.entity.enums.DeliveryStatus;
 import org.backend.stockease.entity.enums.OrderStatus;
@@ -19,6 +20,7 @@ import org.backend.stockease.repository.CartRepository;
 import org.backend.stockease.repository.DeliveryRepository;
 import org.backend.stockease.repository.OrderItemRepository;
 import org.backend.stockease.repository.OrderRepository;
+import org.backend.stockease.repository.ShopRepository;
 import org.backend.stockease.repository.UserRepository;
 import org.backend.stockease.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,9 @@ public class OrderServiceImpl implements OrderService {
     
     @Autowired
     private DeliveryRepository deliveryRepository;
+    
+    @Autowired
+    private ShopRepository shopRepository;
 
     @Override
     @Transactional
@@ -79,6 +84,10 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order); // Save order first to get an ID
         
         // Now create and save OrderItems with the persisted Order
+        // Track shop revenue as we process items
+        java.util.Map<Long, BigDecimal> shopRevenueMap = new java.util.HashMap<>();
+        java.util.Map<Long, Integer> shopOrderCountMap = new java.util.HashMap<>();
+        
         for (CartItem cartItem : cartItems) {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order); // Now order has an ID
@@ -86,6 +95,25 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(cartItem.getProduct().getPrice());
             orderItemRepository.save(orderItem);
+            
+            // Track revenue by shop
+            if (cartItem.getProduct().getShop() != null) {
+                Long shopId = cartItem.getProduct().getShop().getId();
+                BigDecimal itemRevenue = cartItem.getProduct().getPrice()
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+                shopRevenueMap.merge(shopId, itemRevenue, BigDecimal::add);
+                shopOrderCountMap.merge(shopId, 1, Integer::sum);
+            }
+        }
+        
+        // Update shop revenue and order counts
+        for (java.util.Map.Entry<Long, BigDecimal> entry : shopRevenueMap.entrySet()) {
+            Shop shop = shopRepository.findById(entry.getKey()).orElse(null);
+            if (shop != null) {
+                shop.setTotalRevenue(shop.getTotalRevenue().add(entry.getValue()));
+                shop.setTotalOrders(shop.getTotalOrders() + 1);
+                shopRepository.save(shop);
+            }
         }
         
         // Create delivery

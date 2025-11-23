@@ -75,6 +75,16 @@ const Header = () => {
                 )}
               </Link>
             )}
+            {isAuthenticated && (user?.role === 'SELLER' || user?.role === 'supplier') && (
+              <Link to="/seller/dashboard" className="text-white font-semibold text-base hover:text-primary-yellow transition-colors">
+                Seller Dashboard
+              </Link>
+            )}
+            {isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'admin') && (
+              <Link to="/admin/dashboard" className="text-white font-semibold text-base hover:text-primary-yellow transition-colors">
+                Admin Dashboard
+              </Link>
+            )}
           </nav>
 
           {/* Auth Buttons */}

@@ -157,3 +157,32 @@ body,html,#root{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial,san
     .center-wrap{ padding:8px }
     .tabs{ width:100%; justify-content:space-between }
 }
+
+.role-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.role-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.role-btn:hover {
+  border-color: #999;
+}
+
+.role-btn.active {
+  background-color: #e0e7ff;
+  border-color: #6366f1;
+  color: #4f46e5;
+  font-weight: 600;
+}

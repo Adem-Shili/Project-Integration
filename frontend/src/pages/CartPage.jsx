@@ -35,13 +35,18 @@ const CartPage = () => {
     
     try {
       setLoading(true);
+      setError('');
       // Ensure userId is a number
       const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
       const data = await cartAPI.getCart(userId);
-      setCartItems(data);
-      setError('');
+      if (Array.isArray(data)) {
+        setCartItems(data);
+      } else {
+        setCartItems([]);
+      }
     } catch (err) {
-      setError('Failed to load cart items.');
+      setError(err.message || 'Failed to load cart items. Please try again.');
+      setCartItems([]);
       console.error('Error fetching cart:', err);
     } finally {
       setLoading(false);

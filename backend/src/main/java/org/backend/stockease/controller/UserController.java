@@ -3,10 +3,12 @@ package org.backend.stockease.controller;
 import java.util.List;
 
 import org.backend.stockease.entity.User;
-import org.backend.stockease.repository.UserRepository;
+import org.backend.stockease.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,40 +25,50 @@ import lombok.AllArgsConstructor;
 public class UserController {
     
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
+    // Admin endpoints
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-        return userRepository.findById(userId)
+        // Users can get their own info, admins can get anyone's
+        return userService.getUserById(userId)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User userUpdate) {
-        return userRepository.findById(userId)
-            .map(user -> {
-                if (userUpdate.getName() != null) {
-                    user.setName(userUpdate.getName());
-                }
-                if (userUpdate.getEmail() != null) {
-                    user.setEmail(userUpdate.getEmail());
-                }
-                if (userUpdate.getPhone() != null) {
-                    user.setPhone(userUpdate.getPhone());
-                }
-                if (userUpdate.getAddress() != null) {
-                    user.setAddress(userUpdate.getAddress());
-                }
-                return ResponseEntity.ok(userRepository.save(user));
-            })
+        // Users can update their own account, admins can update anyone's
+        return userService.updateUser(userId, userUpdate)
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        // Users can delete their own account, admins can delete anyone's
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // User-specific endpoints
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser() {
+        return userService.getCurrentUser()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<User> updateCurrentUser(@RequestBody User userUpdate) {
+        return userService.updateCurrentUser(userUpdate)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
-
-
